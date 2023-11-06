@@ -1,4 +1,5 @@
 const inquirer = require('inquirer');
+const mysql = require('mysql2');
 
 inquirer
   .prompt([
@@ -8,9 +9,8 @@ inquirer
       choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit'],
     }
   ])
-  .then((response) =>
-    response.confirm === response.password
-      ? console.log('Success!')
-      : console.log('You forgot your password already?!')
+  .then((response) => {
+    console.log(response);
+  }
   );
-  console.log(response)
+  
