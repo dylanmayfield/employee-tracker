@@ -135,13 +135,12 @@ function updateEmployeeRole() {
 };
 
 function viewAllRoles() {
-    query = "SELECT * FROM role";
+    let query = "SELECT * FROM role";
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table(res);
     })
 };
-
 function addRole() {
     inquirer.prompt([
         {
@@ -176,9 +175,34 @@ function addRole() {
 
 function viewAllDepartments() {
     let query = "SELECT * FROM department";
-connection.query(query, function (err, res) {
-    if (err) throw err;
-    console.table(res);
-})
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        console.table(res);
+    })
 
+}
+
+function addDepartment() {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'name',
+            message: 'What is the new department name?',
+        },
+    ])
+        .then((res) => {
+            connection.query("INSERT INTO department SET ?",
+                {
+                    name: res.name,
+                },
+                function (err, res) {
+                    if (err) throw err;
+                    console.table(res);
+                })
+        })
+}
+
+function quit() {
+    connection.end();
+    process.exit();
 }
