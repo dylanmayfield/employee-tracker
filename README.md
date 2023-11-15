@@ -6,3 +6,6 @@ When the application is started. The user is presented with options: view all de
 
 ## Link to Video 
 https://drive.google.com/file/d/1pQWssEa4i19jDqcRKrlwnXlpJdzxrCE6/view
+
+## Link to Github Repo
+https://github.com/dylanmayfield/employee-tracker
