@@ -86,6 +86,13 @@ function viewAllEmployees() {
 };
 
 function addEmployee() {
+
+    connection.query("SELECT id, role_title FROM role", function (err, role) {
+        if (err) throw err;
+    
+    connection.query("SELECT id, CONCAT(first_name, ' ', last_name) AS manager_name FROM employee", function (err, manager) {
+        if (err) throw err;
+
     inquirer.prompt([
         {
             type: 'input',
@@ -103,14 +110,16 @@ function addEmployee() {
             message: 'What is the employees last name?',
         },
         {
-            type: 'input',
+            type: 'list',
             name: 'roleId',
-            message: 'What is the employees role id?',
+            message: 'What is the employees role?',
+            choices: role.map(role => ({ value: role.id, name: role.role_title }))
         },
         {
-            type: 'input',
+            type: 'list',
             name: 'managerId',
-            message: 'What is the employees manager id?',
+            message: 'Who is the employees manager?',
+            choices: manager.map(manager => ({ value: manager.id, name: manager.manager_name }))
         },
     ])
         .then((answers) => {
@@ -128,41 +137,53 @@ function addEmployee() {
                     console.table(res);
                     startPrompt();
                 })
-                ;
         })
-        ;
+        })
+    });
 };
 
 function updateEmployeeRole() {
-    inquirer.prompt([
-        {
-            type: 'input',
-            name: 'employeeId',
-            message: 'What is the employees id?',
-        },
-        {
-            type: 'input',
-            name: 'roleId',
-            message: 'What is the employees new role id?',
-        },
-    ])
-        .then((res) => {
-            connection.query("UPDATE employee SET ? WHERE ?",
-                [
-                    {
-                        role_id: res.roleId,
-                    },
-                    {
-                        id: res.employeeId,
-                    },
-                ],
-                function (err, res) {
-                    if (err) throw err;
-                    console.table(res);
-                    console.log('employee role updated')
-                    startPrompt();
-                })
-        })
+
+    connection.query("SELECT id, CONCAT(first_name, ' ', last_name) AS full_name FROM employee", function (err, employee) {
+        if (err) throw err;
+
+        connection.query("SELECT id, role_title FROM role", function (err, role) {
+            if (err) throw err;
+
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'employeeId',
+                    message: 'Select an employee to update their role:',
+                    choices: employee.map(employee => ({ value: employee.id, name: employee.full_name }))
+                },
+                {
+                    type: 'list',
+                    name: 'roleId',
+                    message: 'What is the employees new role?',
+                    choices: role.map(role => ({ value: role.id, name: role.role_title }))
+                },
+            ])
+                .then((res) => {
+                    connection.query("UPDATE employee SET ? WHERE ?",
+                        [
+                            {
+                                role_id: res.roleId,
+                            },
+                            {
+                                id: res.employeeId,
+                            },
+                        ],
+                        function (err, res) {
+                            if (err) throw err;
+                            console.table(res);
+                            console.log('employee role updated successfully!')
+                            startPrompt();
+                        }
+                    )
+                });
+        });
+    });
 }
 
 function viewAllRoles() {
@@ -220,7 +241,7 @@ function viewAllDepartments() {
         if (err) throw err;
         console.log('\nAll Departments\n');
         console.table(res);
-        startPrompt();  
+        startPrompt();
     })
 
 }
