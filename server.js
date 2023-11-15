@@ -90,15 +90,18 @@ function addEmployee() {
     connection.query("SELECT id, role_title FROM role", function (err, role) {
         if (err) throw err;
     
-    connection.query("SELECT id, CONCAT(first_name, ' ', last_name) AS manager_name FROM employee", function (err, manager) {
+    connection.query("SELECT id, CONCAT(first_name, ' ', last_name) AS manager_name FROM employee WHERE Manager_id IS NULL", function (err, manager) {
         if (err) throw err;
 
-    inquirer.prompt([
+    const choicesWithNone = [
         {
-            type: 'input',
-            name: 'id',
-            message: 'What is the employees id?',
+            value: null,
+            name: 'None',
         },
+        ...manager,
+    ]
+
+    inquirer.prompt([
         {
             type: 'input',
             name: 'firstName',
@@ -119,13 +122,13 @@ function addEmployee() {
             type: 'list',
             name: 'managerId',
             message: 'Who is the employees manager?',
-            choices: manager.map(manager => ({ value: manager.id, name: manager.manager_name }))
+            choices: [ {value:null, name:'None'}, ...manager.map(manager => ({ value: manager.id, name: manager.manager_name }))]
+                
         },
     ])
         .then((answers) => {
             connection.query("INSERT INTO employee SET ?",
                 {
-                    id: answers.id,
                     first_name: answers.firstName,
                     last_name: answers.lastName,
                     role_id: answers.roleId,
@@ -196,12 +199,12 @@ function viewAllRoles() {
     })
 }
 function addRole() {
+
+    connection.query("SELECT id, department_name FROM department", function (err, department) {
+        if (err) throw err;
+
+
     inquirer.prompt([
-        {
-            type: 'input',
-            name: 'id',
-            message: 'What is the new role id?',
-        },
         {
             type: 'input',
             name: 'role_title',
@@ -213,15 +216,15 @@ function addRole() {
             message: 'What is the new role salary?',
         },
         {
-            type: 'input',
+            type: 'list',
             name: 'departmentId',
-            message: 'What is the new role department id?',
+            message: 'What department is the new role in?',
+            choices: department.map(department => ({ value: department.id, name: department.department_name }))
         },
     ])
         .then((res) => {
             connection.query("INSERT INTO role SET ?",
                 {
-                    id: res.id,
                     role_title: res.role_title,
                     salary: res.salary,
                     department_id: res.departmentId,
@@ -233,6 +236,7 @@ function addRole() {
                     startPrompt();
                 })
         })
+    })
 }
 
 function viewAllDepartments() {

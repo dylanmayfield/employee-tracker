@@ -23,6 +23,7 @@ VALUES  (1, "John", "Doe", 1, NULL),
         (6, "Malia", "Brown", 6, 5),
         (7, "Sarah", "Lourd", 7, NULL),
         (8, "Tom", "Allen", 8, 7);
+        (9, Null);
        
 
 
