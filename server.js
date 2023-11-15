@@ -18,66 +18,70 @@ connection.connect((err) => {
     console.log(`connected as id ${connection.threadId}`);
 
 });
+function startPrompt() {
+    inquirer
+        .prompt([
+            {
+                type: 'list',
+                name: 'action',
+                message: 'What would you like to do?',
+                choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit'],
+            },
+        ])
+        .then((res) => {
+            console.log(res)
+            switch (res.action) {
+                case 'View All Employees':
+                    viewAllEmployees();
+                    break;
+                case 'Add Employee':
+                    addEmployee();
+                    break;
+                case 'Update Employee Role':
+                    updateEmployeeRole();
+                    break;
+                case 'View All Roles':
+                    viewAllRoles();
+                    break;
+                case 'Add Role':
+                    addRole();
+                    break;
+                case 'View All Departments':
+                    viewAllDepartments();
+                    break;
+                case 'Add Department':
+                    addDepartment();
+                    break;
+                case 'Quit':
+                    quit();
+                    return;
+            }
 
-inquirer
-    .prompt([
-        {
-            type: 'list',
-            name: 'action',
-            message: 'What would you like to do?',
-            choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit'],
-        },
-    ])
-    .then((res) => {
-        console.log(res)
-        switch (res.action) {
-            case 'View All Employees':
-                viewAllEmployees();
-                break;
-            case 'Add Employee':
-                addEmployee();
-                break;
-            case 'Update Employee Role':
-                updateEmployeeRole();
-                break;
-            case 'View All Roles':
-                viewAllRoles();
-                break;
-            case 'Add Role':
-                addRole();
-                break;
-            case 'View All Departments':
-                viewAllDepartments();
-                break;
-            case 'Add Department':
-                addDepartment();
-                break;
-            case 'Quit':
-                quit();
-                break;
-        }
-    });
+
+
+        });
+
+}
 
 function viewAllEmployees() {
     let query = `SELECT 
-    e.id AS employee_id,
-    e.first_name,
-    e.last_name, 
-    r.id AS role_id,
-    r.role_title,
-    r.salary,
-    d.id AS department_id,
-    d.department_name,
-    e.manager_id AS manager_employee_id,
-    m.first_name AS manager_first_name,
-    m.last_name AS manager_last_name
-FROM employee e
-INNER JOIN role r ON e.role_id = r.id
-INNER JOIN department d ON r.department_id = d.id
-LEFT JOIN employee m ON e.manager_id = m.id`;
+                e.id,
+                e.first_name,
+                e.last_name, 
+                r.role_title,
+                d.department_name,
+                r.salary,
+                CONCAT(m.first_name, ' ', m.last_name) AS manager_name
+            FROM employee e
+            INNER JOIN role r ON e.role_id = r.id
+            INNER JOIN department d ON r.department_id = d.id
+            LEFT JOIN employee m ON e.manager_id = m.id`;
+
     connection.query(query, function (err, res) {
         if (err) throw err;
+        console.log('\nAll Employees\n');
         console.table(res);
+        startPrompt();
     })
 };
 
@@ -119,11 +123,14 @@ function addEmployee() {
                     manager_id: answers.managerId,
                 },
                 function (err, res) {
-                    ;
+                    console.log('employee added');
                     if (err) throw err;
                     console.table(res);
+                    startPrompt();
                 })
+                ;
         })
+        ;
 };
 
 function updateEmployeeRole() {
@@ -152,22 +159,31 @@ function updateEmployeeRole() {
                 function (err, res) {
                     if (err) throw err;
                     console.table(res);
+                    console.log('employee role updated')
+                    startPrompt();
                 })
         })
-};
+}
 
 function viewAllRoles() {
     let query = "SELECT * FROM role";
     connection.query(query, function (err, res) {
         if (err) throw err;
+        console.log('\nAll Roles\n');
         console.table(res);
+        startPrompt();
     })
-};
+}
 function addRole() {
     inquirer.prompt([
         {
             type: 'input',
-            name: 'title',
+            name: 'id',
+            message: 'What is the new role id?',
+        },
+        {
+            type: 'input',
+            name: 'role_title',
             message: 'What is the new role title?',
         },
         {
@@ -184,22 +200,27 @@ function addRole() {
         .then((res) => {
             connection.query("INSERT INTO role SET ?",
                 {
-                    title: res.title,
+                    id: res.id,
+                    role_title: res.role_title,
                     salary: res.salary,
                     department_id: res.departmentId,
                 },
                 function (err, res) {
                     if (err) throw err;
                     console.table(res);
+                    console.log('role added');
+                    startPrompt();
                 })
         })
-};
+}
 
 function viewAllDepartments() {
     let query = "SELECT * FROM department";
     connection.query(query, function (err, res) {
         if (err) throw err;
+        console.log('\nAll Departments\n');
         console.table(res);
+        startPrompt();  
     })
 
 }
@@ -208,18 +229,20 @@ function addDepartment() {
     inquirer.prompt([
         {
             type: 'input',
-            name: 'name',
+            name: 'department_name',
             message: 'What is the new department name?',
         },
     ])
         .then((res) => {
             connection.query("INSERT INTO department SET ?",
                 {
-                    name: res.name,
+                    department_name: res.department_name,
                 },
                 function (err, res) {
                     if (err) throw err;
+                    console.log('department added');
                     console.table(res);
+                    startPrompt();
                 })
         })
 }
@@ -228,4 +251,7 @@ function quit() {
     connection.end();
     process.exit();
 }
+
+
+startPrompt();
 
