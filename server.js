@@ -1,7 +1,7 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const cTable = require('console.table');
-const  { query } = require('express');
+const  { query, response } = require('express');
 
 const connection = mysql.createConnection({
 
@@ -70,6 +70,11 @@ function addEmployee() {
     inquirer.prompt([
         {
             type: 'input',
+            name: 'id',
+            message: 'What is the employees id?',
+        },
+        {
+            type: 'input',
             name: 'firstName',
             message: 'What is the employees first name?',
         },
@@ -90,11 +95,17 @@ function addEmployee() {
         },
     ])
         .then((answers) => {
-            connection.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?)",
-            [answers.firstName, answers.lastName, answers.roleId, answers.managerId],
-                function (err, res) {
+            connection.query("INSERT INTO employee SET ?",
+                {   
+                    id: answers.id,
+                    first_name: answers.firstName,
+                    last_name: answers.lastName,
+                    role_id: answers.roleId,
+                    manager_id: answers.managerId,
+                },
+                function (err, res) {;
                     if (err) throw err;
-                    console.log('Employee added successfully!')
+                    console.table(res);
                 })
         })
 };
